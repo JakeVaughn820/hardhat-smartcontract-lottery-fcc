@@ -33,7 +33,7 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
     enum RaffleState {
         OPEN,
         CALCULATING
-    }
+    } // OPEN = 0, CALCULATING = 1
 
     /*-------------------- State Varibles ------------------------*/
 
@@ -52,7 +52,7 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
     address private s_recentWinner;
     RaffleState private s_raffleState;
     uint256 private s_lastTimeStamp;
-    uint256 private immutable i_interval;
+    uint256 private immutable i_keepersUpdateInterval;
 
     /*-------------------- Events --------------------------------*/
 
@@ -66,20 +66,20 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
 
     constructor(
         address vrfCoordinator,
-        bytes32 keyHash,
         uint64 subscriptionId,
+        bytes32 keyHash,
         uint32 callbackGasLimit,
         uint256 entranceFee,
-        uint256 interval
+        uint256 keepersUpdateInterval
     ) VRFConsumerBaseV2(vrfCoordinator) {
         i_vrfCoordinator = VRFCoordinatorV2Interface(vrfCoordinator);
-        i_keyHash = keyHash;
         i_subscriptionId = subscriptionId;
+        i_keyHash = keyHash;
         i_callbackGasLimit = callbackGasLimit;
         i_entranceFee = entranceFee;
         s_raffleState = RaffleState.OPEN;
         s_lastTimeStamp = block.timestamp;
-        i_interval = interval;
+        i_keepersUpdateInterval = keepersUpdateInterval;
     }
 
     /*-------------------- receive function ---------------------------------*/
@@ -92,7 +92,7 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
      * @dev This is the function that the Chainlink Keeper nodes call
      * they look for `upkeepNeeded` to return True.
      * the following should be true for this to return true:
-     * 1. The time interval has passed between raffle runs.
+     * 1. The time keepersUpdateInterval has passed between raffle runs.
      * 2. The lottery is open.
      * 3. The contract has ETH.
      * 4. Implicity, your subscription is funded with LINK.
@@ -109,12 +109,16 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
         )
     {
         bool isOpen = (RaffleState.OPEN == s_raffleState);
-        bool timePassed = ((block.timestamp - s_lastTimeStamp) > i_interval);
+        bool timePassed = ((block.timestamp - s_lastTimeStamp) > i_keepersUpdateInterval);
         bool hasPlayers = (s_players.length > 0);
         bool hasBalance = (address(this).balance > 0);
         upkeepNeeded = (isOpen && timePassed && hasPlayers && hasBalance);
     }
 
+    /**
+     * @dev Once `checkUpkeep` is returning `true`, this function is called
+     * and it kicks off a Chainlink VRF call to get a random winner.
+     */
     function performUpkeep(
         bytes calldata /* performData */
     ) external override {
@@ -153,7 +157,10 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
     }
 
     /*-------------------- internal functions -------------------------------*/
-
+    /**
+     * @dev This is the function that Chainlink VRF node
+     * calls to send the money to the random winner.
+     */
     function fulfillRandomWords(
         uint256, /*requestId*/
         uint256[] memory randomWords
@@ -207,7 +214,7 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
         return s_lastTimeStamp;
     }
 
-    function getInterval() public view returns (uint256) {
-        return i_interval;
+    function getKeepersUpdateInterval() public view returns (uint256) {
+        return i_keepersUpdateInterval;
     }
 }

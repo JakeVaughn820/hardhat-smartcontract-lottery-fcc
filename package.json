@@ -4,12 +4,15 @@
   "license": "MIT",
   "devDependencies": {
     "@chainlink/contracts": "^0.4.2",
+    "@nomicfoundation/hardhat-chai-matchers": "^1.0.2",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.3",
     "@nomicfoundation/hardhat-toolbox": "^1.0.2",
     "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers",
     "@nomiclabs/hardhat-etherscan": "^3.1.0",
     "@typechain/ethers-v5": "^10.1.0",
     "@typechain/hardhat": "^6.1.2",
     "@types/chai": "^4.3.1",
+    "@types/mocha": "^9.1.1",
     "@types/node": "^18.6.3",
     "chai": "^4.3.6",
     "dotenv": "^16.0.1",
@@ -25,5 +28,14 @@
     "ts-node": "^10.9.1",
     "typechain": "^8.1.0",
     "typescript": "^4.7.4"
+  },
+  "scripts": {
+    "test": "yarn hardhat test",
+    "test-staging": "yarn hardhat test --network rinkeby",
+    "lint": "yarn solhint 'contracts/*.sol'",
+    "lint:fix": "yarn solhint 'contracts/**/*.sol' --fix",
+    "format": "yarn prettier --write .",
+    "coverage": "yarn hardhat coverage",
+    "typechain": "yarn hardhat typechain"
   }
 }

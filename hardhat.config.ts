@@ -74,7 +74,7 @@ const config: HardhatUserConfig = {
         },
     },
     etherscan: {
-        // npx hardhat verify --network <NETWORK> <CONTRACT_ADDRESS> <CONSTRUCTOR_PARAMETERS>
+        // yarn hardhat verify --network <NETWORK> <CONTRACT_ADDRESS> <CONSTRUCTOR_PARAMETERS>
         apiKey: {
             rinkeby: ETHERSCAN_API_KEY,
             kovan: ETHERSCAN_API_KEY,
@@ -102,9 +102,6 @@ const config: HardhatUserConfig = {
         compilers: [
             {
                 version: "0.8.9",
-            },
-            {
-                version: "0.4.24",
             },
         ],
     },
