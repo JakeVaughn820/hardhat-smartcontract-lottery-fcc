@@ -155,6 +155,48 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
                       await raffle.enterRaffle({ value: raffleEntranceFee })
                   }
                   const startingTimeStamp = await raffle.getLastTimeStamp()
+
+                  // This will be more important for our staging tests...
+                  await new Promise<void>(async (resolve, reject) => {
+                      raffle.once("WinnerPicked", async () => {
+                          console.log("WinnerPicked event fired!")
+                          // assert throws an error if it fails, so we need to wrap
+                          // it in a try/catch so that the promise returns event
+                          // if it fails.
+                          try {
+                              // Now lets get the ending values...
+                              const recentWinner = await raffle.getRecentWinner()
+                              const raffleState = await raffle.getRaffleState()
+                              const winnerBalance = await accounts[1].getBalance()
+                              const endingTimeStamp = await raffle.getLastTimeStamp()
+                              await expect(raffle.getPlayer(0)).to.be.reverted
+                              assert.equal(recentWinner.toString(), accounts[1].address)
+                              assert.equal(raffleState, 0)
+                              assert.equal(
+                                  winnerBalance.toString(),
+                                  startingBalance
+                                      .add(
+                                          raffleEntranceFee
+                                              .mul(additionalEntrances)
+                                              .add(raffleEntranceFee)
+                                      )
+                                      .toString()
+                              )
+                              assert(endingTimeStamp > startingTimeStamp)
+                              resolve()
+                          } catch (e) {
+                              reject(e)
+                          }
+                      })
+
+                      const tx = await raffle.performUpkeep("0x")
+                      const txReceipt = await tx.wait(1)
+                      const startingBalance = await accounts[1].getBalance()
+                      await vrfCoordinatorV2Mock.fulfillRandomWords(
+                          txReceipt!.events![1].args!.requestId,
+                          raffle.address
+                      )
+                  })
               })
           })
       })
