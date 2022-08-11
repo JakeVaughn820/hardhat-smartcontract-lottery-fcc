@@ -13,8 +13,8 @@ const updateUI: DeployFunction = async function (hre: HardhatRuntimeEnvironment)
         const raffle = await ethers.getContract("Raffle")
         const contractAddresses = JSON.parse(fs.readFileSync(frontEndContractsFile, "utf8"))
         if (chainId in contractAddresses) {
-            if (!contractAddresses[network.config.chainId!].includes(raffle.address)) {
-                contractAddresses[network.config.chainId!].push(raffle.address)
+            if (!contractAddresses[chainId].includes(raffle.address)) {
+                contractAddresses[chainId].push(raffle.address)
             }
         } else {
             contractAddresses[chainId] = [raffle.address]
