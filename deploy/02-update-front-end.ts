@@ -7,7 +7,6 @@ const updateUI: DeployFunction = async function (hre: HardhatRuntimeEnvironment)
     const { network, ethers } = hre
     const chainId = network.config.chainId!
 
-    console.log(process.env.UPDATE_FRONT_END)
     if (process.env.UPDATE_FRONT_END) {
         console.log("Writing to front end...")
         const raffle = await ethers.getContract("Raffle")
